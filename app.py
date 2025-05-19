@@ -4,6 +4,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+
+from pathlib import Path
+import base64
+
 from sklearn.base import BaseEstimator, TransformerMixin
 
 class PositiveClipper(BaseEstimator, TransformerMixin):
@@ -20,7 +24,40 @@ class PositiveClipper(BaseEstimator, TransformerMixin):
         return np.clip(X, a_min=0, a_max=None)
 
 
+def set_bg_from_local(image_path):
+    """Affiche une image de fond éclaircie pour améliorer la lisibilité"""
+    with open(image_path, "rb") as img_file:
+        encoded = base64.b64encode(img_file.read()).decode()
+    css = f"""
+    <style>
+    .stApp {{
+        background-image: url("data:image/jpg;base64,{encoded}");
+        background-size: cover;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        position: relative;
+    }}
 
+    /* Overlay éclaircissant */
+    .stApp::before {{
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.6);  /* Blanc semi-transparent */
+        z-index: 0;
+    }}
+
+    /* S'assurer que tout le contenu passe au-dessus */
+    .stApp > * {{
+        position: relative;
+        z-index: 1;
+    }}
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
 
 # Titre
 st.title(" Prédiction de souscription bancaire")
