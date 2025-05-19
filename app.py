@@ -41,7 +41,7 @@ def set_bg_from_local(image_path):
     st.markdown(css, unsafe_allow_html=True)
 
 # Appliquer le fond
-set_bg_from_local("business-bank.jpg")
+set_bg_from_local("souscription.jpg")
 
 def set_bg_from_local(image_path):
     """Affiche une image de fond éclaircie pour améliorer la lisibilité"""
