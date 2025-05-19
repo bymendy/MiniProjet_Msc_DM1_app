@@ -23,6 +23,24 @@ class PositiveClipper(BaseEstimator, TransformerMixin):
         X = np.where(np.isfinite(X), X, 0)
         return np.clip(X, a_min=0, a_max=None)
 
+def set_bg_from_local(image_path):
+    """Encode l'image locale en base64 et l'utilise comme fond"""
+    with open(image_path, "rb") as img_file:
+        encoded = base64.b64encode(img_file.read()).decode()
+    css = f"""
+    <style>
+    .stApp {{
+        background-image: url("data:image/jpg;base64,{encoded}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
+
+# Appliquer le fond
+set_bg_from_local("business-bank.jpg")
 
 def set_bg_from_local(image_path):
     """Affiche une image de fond éclaircie pour améliorer la lisibilité"""
