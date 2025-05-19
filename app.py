@@ -35,8 +35,6 @@ def set_bg_from_local(image_path):
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
-        opacity: .3;  /* plus opaque */
-        background-color: #FFFFFF;  /* plus opaque */
     }}
     </style>
     """
@@ -58,6 +56,8 @@ def set_bg_from_local(image_path):
         background-attachment: fixed;
         background-repeat: no-repeat;
         position: relative;
+        background-color: rgba(255, 255, 255, 0.80);  /* plus opaque */
+
     }}
 
         .stApp::before {{
@@ -65,7 +65,7 @@ def set_bg_from_local(image_path):
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
         opacity: .3;  /* plus opaque */
-        background-color: #FFFFFF;  /* plus opaque */
+        background-color: rgba(255, 255, 255, 0.80);  /* plus opaque */
         z-index: 0;
     }}
 
