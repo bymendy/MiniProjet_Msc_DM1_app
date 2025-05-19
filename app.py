@@ -35,6 +35,8 @@ def set_bg_from_local(image_path):
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
+        opacity: .3;  /* plus opaque */
+        background-color: #FFFFFF;  /* plus opaque */
     }}
     </style>
     """
