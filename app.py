@@ -49,6 +49,7 @@ def set_bg_from_local(image_path):
         encoded = base64.b64encode(img_file.read()).decode()
     css = f"""
     <style>
+    
     .stApp {{
         background-image: url("data:image/jpg;base64,{encoded}");
         background-size: cover;
@@ -61,6 +62,7 @@ def set_bg_from_local(image_path):
         content: "";
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
+        opacity: 0.5;  /* plus opaque */
         background-color: rgba(255, 255, 255, 0.80);  /* plus opaque */
         z-index: 0;
     }}
