@@ -30,13 +30,29 @@ def set_bg_from_local(image_path):
     css = f"""
     <style>
     .stApp {{
-        background-image: url("data:image/jpg;base64,{encoded}");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-    }}
-    </style>
-    """
+    background-image: url("data:image/jpg;base64,{encoded}");
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}}
+
+.stApp::before {{
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(255, 255, 255, 0.80);  /* plus opaque */
+    z-index: 0;
+}}
+
+.stApp > * {{
+    position: relative;
+    z-index: 1;
+    color: #000;
+    font-weight: 600;
+}}
+</style>
+"""
+
     st.markdown(css, unsafe_allow_html=True)
 
 # Appliquer le fond
