@@ -62,7 +62,7 @@ def set_bg_from_local(image_path):
         content: "";
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        opacity: 0.8;  /* plus opaque */
+        opacity: 0.2;  /* plus opaque */
         background-color: rgba(255, 255, 255, 0.80);  /* plus opaque */
         z-index: 0;
     }}
