@@ -41,7 +41,7 @@ def set_bg_from_local(image_path):
     st.markdown(css, unsafe_allow_html=True)
 
 # Appliquer le fond
-set_bg_from_local("souscription.jpg")
+set_bg_from_local("business-bank.jpg")
 
 def set_bg_from_local(image_path):
     """Affiche une image de fond éclaircie pour améliorer la lisibilité"""
@@ -62,8 +62,8 @@ def set_bg_from_local(image_path):
         content: "";
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        opacity: 0.2;  /* plus opaque */
-        background-color: rgba(255, 255, 255, 0.80);  /* plus opaque */
+        opacity: .3;  /* plus opaque */
+        background-color: #fff;  /* plus opaque */
         z-index: 0;
     }}
 
