@@ -92,118 +92,140 @@ st.markdown("Modèle basé sur pipeline : log1p + binarisation + OneHot + standa
 # Chargement du pipeline entraîné
 model = joblib.load("model_pipeline.pkl")
 
-# Entrée utilisateur
-st.header("🧾 Paramètres client")
+# ---- 2 colonnes principales : Paramètres (gauche) / Résultat (droite)
+left, right = st.columns([1.2, 1])
 
-# Groupe 1 : variables numériques
-col1, col2, col3 = st.columns(3)
+# -----------------------------
+# Formulaire (UX) : pas de recalcul à chaque slider
+# -----------------------------
+with left:
+    st.header("🧾 Paramètres client")
 
-with col1:
-    duration = st.slider("Durée de l'appel (sec)", 0, 5000, 180)
+    with st.form("form_client"):
+        # Groupe 1 : variables numériques
+        col1, col2, col3 = st.columns(3)
 
-with col2:
-    balance = st.number_input("Solde moyen (€)", -2000, 100000, 1000)
+        with col1:
+            duration = st.slider("Durée de l'appel (sec)", 0, 5000, 180)
 
-with col3:
-    campaign = st.slider("Contacts campagne", 1, 50, 1)
+        with col2:
+            balance = st.number_input("Solde moyen (€)", -2000, 100000, 1000)
 
-col4, col5 = st.columns(2)
+        with col3:
+            campaign = st.slider("Contacts campagne", 1, 50, 1)
 
-with col4:
-    pdays = st.slider("Jours depuis dernier contact", -1, 999, -1)
+        col4, col5 = st.columns(2)
 
-with col5:
-    previous = st.slider("Nb de contacts précédents", 0, 100, 0)
+        with col4:
+            pdays = st.slider("Jours depuis dernier contact", -1, 999, -1)
 
-# Groupe 2 : variables catégorielles
-col6, col7 = st.columns(2)
+        with col5:
+            previous = st.slider("Nb de contacts précédents", 0, 100, 0)
 
-with col6:
-    job = st.selectbox("Profession", [
-        'admin.', 'blue-collar', 'entrepreneur', 'housemaid', 'management',
-        'retired', 'self-employed', 'services', 'student', 'technician', 'unemployed'
-    ])
-    contact = st.selectbox("Type de contact", ['cellular', 'telephone', 'unknown'])
-    poutcome = st.selectbox("Résultat précédente", ['success', 'failure', 'other', 'non_contacté'])
+        # Groupe 2 : variables catégorielles
+        col6, col7 = st.columns(2)
 
-with col7:
-    education = st.selectbox("Éducation", ['primary', 'secondary', 'tertiary'])
-    month = st.selectbox("Mois du contact", [
-        'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul',
-        'aug', 'sep', 'oct', 'nov', 'dec'
-    ])
-    cluster = st.selectbox("Cluster client", [0, 1, 2])
+        with col6:
+            job = st.selectbox("Profession", [
+                'admin.', 'blue-collar', 'entrepreneur', 'housemaid', 'management',
+                'retired', 'self-employed', 'services', 'student', 'technician', 'unemployed'
+            ])
+            contact = st.selectbox("Type de contact", ['cellular', 'telephone', 'unknown'])
+            poutcome = st.selectbox("Résultat précédente", ['success', 'failure', 'other', 'non_contacté'])
 
-# DataFrame final
-client_input = pd.DataFrame([{
-    'duration': duration,
-    'balance': balance,
-    'campaign': campaign,
-    'pdays': pdays,
-    'previous': previous,
-    'job': job,
-    'education': education,
-    'contact': contact,
-    'month': month,
-    'poutcome': poutcome,
-    'cluster': cluster
-}])
+        with col7:
+            education = st.selectbox("Éducation", ['primary', 'secondary', 'tertiary'])
+            month = st.selectbox("Mois du contact", [
+                'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul',
+                'aug', 'sep', 'oct', 'nov', 'dec'
+            ])
+            cluster = st.selectbox("Cluster client", [0, 1, 2])
 
-# Prédiction
-proba = model.predict_proba(client_input)[0, 1]
-pred = model.predict(client_input)[0]
+        submitted = st.form_submit_button("🎯 Prédire")
 
-# Affichage résultat
-st.subheader("📈 Résultat")
-st.metric("Probabilité de souscription à des dépôts à terme", f"{proba*100:.2f} %")
+# Valeurs par défaut si l'utilisateur n'a pas encore cliqué
+if "has_pred" not in st.session_state:
+    st.session_state.has_pred = False
 
-if pred == 1:
-    st.success("✅ Le client est susceptible de souscrire.")
+if submitted:
+    st.session_state.has_pred = True
+
+# Calcul + affichage uniquement après clic
+if st.session_state.has_pred:
+    # DataFrame final
+    client_input = pd.DataFrame([{
+        'duration': duration,
+        'balance': balance,
+        'campaign': campaign,
+        'pdays': pdays,
+        'previous': previous,
+        'job': job,
+        'education': education,
+        'contact': contact,
+        'month': month,
+        'poutcome': poutcome,
+        'cluster': cluster
+    }])
+
+    # Prédiction
+    proba = model.predict_proba(client_input)[0, 1]
+    pred = model.predict(client_input)[0]
+
+    # -----------------------------
+    # Jauge Plotly auto-thème
+    # -----------------------------
+    import plotly.graph_objects as go
+
+    p = float(proba)
+    p_pct = round(p * 100, 1)
+
+    theme_base = st.get_option("theme.base")
+    plotly_template = "plotly_dark" if theme_base == "dark" else "plotly_white"
+
+    main_color = "green" if pred == 1 else "red"
+
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=p_pct,
+        number={"suffix": "%", "font": {"size": 44}},
+        gauge={
+            "axis": {"range": [0, 100]},
+            "bar": {"color": main_color},
+            "steps": [
+                {"range": [0, 40], "color": "rgba(239,68,68,0.25)"},
+                {"range": [40, 70], "color": "rgba(234,179,8,0.25)"},
+                {"range": [70, 100], "color": "rgba(34,197,94,0.25)"},
+            ],
+            "threshold": {
+                "line": {
+                    "color": "white" if theme_base == "dark" else "black",
+                    "width": 3
+                },
+                "thickness": 0.75,
+                "value": 50
+            }
+        },
+        title={"text": "Niveau de probabilité de souscription"}
+    ))
+
+    fig.update_layout(
+        template=plotly_template,
+        height=320,
+        margin=dict(l=20, r=20, t=60, b=20),
+    )
+
+    with right:
+        st.header("📈 Résultat")
+        st.metric("Probabilité de souscription à des dépôts à terme", f"{proba*100:.2f} %")
+
+        if pred == 1:
+            st.success("✅ Le client est susceptible de souscrire.")
+        else:
+            st.warning("❌ Le client ne semble pas intéressé.")
+
+        st.plotly_chart(fig, use_container_width=True)
+
 else:
-    st.warning("❌ Le client ne semble pas intéressé.")
-
-
-# -----------------------------
-# Jauge Plotly auto-thème
-# -----------------------------
-import plotly.graph_objects as go
-
-p = float(proba)
-p_pct = round(p * 100, 1)
-
-theme_base = st.get_option("theme.base")
-plotly_template = "plotly_dark" if theme_base == "dark" else "plotly_white"
-
-main_color = "green" if pred == 1 else "red"
-
-fig = go.Figure(go.Indicator(
-    mode="gauge+number",
-    value=p_pct,
-    number={"suffix": "%", "font": {"size": 44}},
-    gauge={
-        "axis": {"range": [0, 100]},
-        "bar": {"color": main_color},
-        "steps": [
-            {"range": [0, 40], "color": "rgba(239,68,68,0.25)"},
-            {"range": [40, 70], "color": "rgba(234,179,8,0.25)"},
-            {"range": [70, 100], "color": "rgba(34,197,94,0.25)"},
-        ],
-        "threshold": {
-            "line": {
-                "color": "white" if theme_base == "dark" else "black",
-                "width": 3
-            },
-            "thickness": 0.75,
-            "value": 50
-        }
-    },
-    title={"text": "Niveau de probabilité de souscription"}
-))
-
-fig.update_layout(
-    template=plotly_template,
-    height=320,
-    margin=dict(l=20, r=20, t=60, b=20),
-)
-
-st.plotly_chart(fig, use_container_width=True)
+    with right:
+        st.header("📈 Résultat")
+        st.info("Remplis les paramètres puis clique sur **🎯 Prédire** pour afficher la prédiction.")
