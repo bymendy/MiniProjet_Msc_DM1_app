@@ -66,9 +66,11 @@ set_bg_from_local("business_fond_bank.png")
 
 # -----------------------------
 # CSS Split-screen PRO (2 blocs réels)
-# - style appliqué aux colonnes Streamlit
-# - colonne gauche = style demandé
-# - bouton "Prédire" centré
+# - style appliqué aux colonnes Streamlit (PAS de <div> wrapper)
+# - glassmorphism
+# - hover
+# - séparation verticale
+# - bouton stylisé
 # -----------------------------
 BLOCK_HEIGHT = "85vh"
 
@@ -81,27 +83,9 @@ st.markdown(f"""
     padding-right: 2rem;
 }}
 
-/* ------------------------------
-   COLONNE GAUCHE (FORMULAIRE)
-   Style demandé exact
------------------------------- */
-div[data-testid="column"]:nth-of-type(1) > div {{
+/* Wrapper intérieur de chaque colonne (c'est LUI qu'on transforme en "carte") */
+div[data-testid="column"] > div {{
     background: rgba(255,255,255,0.72);
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 22px;
-    padding: 24px 24px;
-    min-height: {BLOCK_HEIGHT};
-    box-shadow: 0 12px 34px rgba(0,0,0,0.15);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-}}
-
-/* ------------------------------
-   COLONNE DROITE (RÉSULTAT)
-   Glass léger
------------------------------- */
-div[data-testid="column"]:nth-of-type(2) > div {{
-    background: rgba(255,255,255,0.28);
     border: 1px solid rgba(255,255,255,0.30);
     border-radius: 22px;
     padding: 24px;
@@ -109,28 +93,35 @@ div[data-testid="column"]:nth-of-type(2) > div {{
     box-shadow: 0 12px 34px rgba(0,0,0,0.18);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}}
+
+/* Hover sur la "carte" colonne */
+div[data-testid="column"] > div:hover {{
+    transform: translateY(-3px);
+    box-shadow: 0 16px 44px rgba(0,0,0,0.22);
+    border-color: rgba(255,255,255,0.40);
+    background: rgba(255,255,255,0.32);
 }}
 
 /* Séparation verticale subtile */
-div[data-testid="column"]:nth-of-type(1) {{
-    border-right: 1px solid rgba(0,0,0,0.08);
-    padding-right: 1.2rem;
-}}
-div[data-testid="column"]:nth-of-type(2) {{
-    padding-left: 1.2rem;
+div[data-testid="column"]:nth-of-type(1) > div {{
+    border-right: 1px solid rgba(255,255,255,0.20);
 }}
 
-/* ------------------------------
-   BOUTON "PRÉDIRE" CENTRÉ
------------------------------- */
+/* Titres (Streamlit header/subheader) un peu plus visibles */
+h2, h3 {{
+    margin-top: 0.2rem;
+}}
+
+/* Bouton "Prédire" stylisé */
 div[data-testid="stFormSubmitButton"] {{
     display: flex;
     justify-content: center;
     margin-top: 20px;
 }}
-
 div[data-testid="stFormSubmitButton"] button {{
-    width: 60%;
+ width: 50%;   /* Ajuste 40%, 50% ou 60% selon ton goût */
     border-radius: 14px !important;
     padding: 0.8rem 1rem !important;
     font-weight: 800 !important;
@@ -140,12 +131,14 @@ div[data-testid="stFormSubmitButton"] button {{
     box-shadow: 0 10px 22px rgba(16,185,129,0.25) !important;
     transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
 }}
-
 div[data-testid="stFormSubmitButton"] button:hover {{
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: 0 14px 30px rgba(16,185,129,0.35) !important;
     filter: brightness(1.02);
 }}
+
+
+
 div[data-testid="stFormSubmitButton"] button:active {{
     transform: translateY(0px);
     box-shadow: 0 8px 16px rgba(16,185,129,0.25) !important;
@@ -190,6 +183,7 @@ with left:
             ])
             contact = st.selectbox("Type de contact", ['cellular', 'telephone', 'unknown'])
             poutcome = st.selectbox("Résultat précédente", ['success', 'failure', 'other', 'non_contacté'])
+
         with col7:
             education = st.selectbox("Éducation", ['primary', 'secondary', 'tertiary'])
             month = st.selectbox("Mois du contact", [
