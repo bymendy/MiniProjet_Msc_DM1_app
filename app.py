@@ -117,6 +117,7 @@ h2, h3 {{
 /* Bouton "Prédire" stylisé */
 div[data-testid="stFormSubmitButton"] button {{
     width: 100%;
+    text-align: center;
     border-radius: 14px !important;
     padding: 0.8rem 1rem !important;
     font-weight: 800 !important;
