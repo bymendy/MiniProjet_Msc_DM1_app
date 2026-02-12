@@ -1,4 +1,4 @@
-#app.py
+# app.py
 import base64
 import joblib
 import numpy as np
@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 from sklearn.base import BaseEstimator, TransformerMixin
 
-# ✅ Plein écran / largeur max (évite l'effet "petits blocs")
+# Pleine largeur
 st.set_page_config(layout="wide")
 
 
@@ -24,17 +24,11 @@ class PositiveClipper(BaseEstimator, TransformerMixin):
         return np.clip(X, a_min=0, a_max=None)
 
 
-def set_bg_from_local(image_path: str, overlay_opacity: float = 0.30, overlay_color=(255, 255, 255), overlay_tint: float = 0.80):
-    """
-    Fond d'écran + voile de lisibilité.
-    - overlay_opacity: opacité du voile (::before)
-    - overlay_color: couleur du voile (RGB)
-    - overlay_tint: fond de base de l'app (rgba)
-    """
+def set_bg_from_local(image_path: str):
+    """Fond d'écran + voile de lisibilité."""
     with open(image_path, "rb") as img_file:
         encoded = base64.b64encode(img_file.read()).decode()
 
-    r, g, b = overlay_color
     css = f"""
     <style>
     .stApp {{
@@ -43,15 +37,15 @@ def set_bg_from_local(image_path: str, overlay_opacity: float = 0.30, overlay_co
         background-attachment: fixed;
         background-repeat: no-repeat;
         position: relative;
-        background-color: rgba({r}, {g}, {b}, {overlay_tint});
+        background-color: rgba(255, 255, 255, 0.80);
     }}
 
     .stApp::before {{
         content: "";
         position: fixed;
         inset: 0;
-        opacity: {overlay_opacity};
-        background-color: rgba({r}, {g}, {b}, {overlay_tint});
+        opacity: .30;
+        background-color: rgba(255, 255, 255, 0.80);
         z-index: 0;
         pointer-events: none;
     }}
@@ -67,16 +61,16 @@ def set_bg_from_local(image_path: str, overlay_opacity: float = 0.30, overlay_co
     st.markdown(css, unsafe_allow_html=True)
 
 
-# ✅ Appliquer le fond UNE seule fois (version clean)
+# Fond
 set_bg_from_local("business_fond_bank.png")
 
-
 # -----------------------------
-# CSS Split screen premium
-# - 2 cartes uniquement (pas 4 blocs)
-# - glassmorphism (sans blanc opaque)
-# - séparation verticale subtile
-# - hover animation + bouton stylisé
+# CSS Split-screen PRO (2 blocs réels)
+# - style appliqué aux colonnes Streamlit (PAS de <div> wrapper)
+# - glassmorphism
+# - hover
+# - séparation verticale
+# - bouton stylisé
 # -----------------------------
 BLOCK_HEIGHT = "85vh"
 
@@ -89,17 +83,8 @@ st.markdown(f"""
     padding-right: 2rem;
 }}
 
-/* Séparation verticale subtile entre colonnes */
-div[data-testid="column"]:nth-of-type(1) {{
-    border-right: 1px solid rgba(255,255,255,0.20);
-    padding-right: 1.2rem;
-}}
-div[data-testid="column"]:nth-of-type(2) {{
-    padding-left: 1.2rem;
-}}
-
-/* Card split - glass (pas opaque) */
-.split-card {{
+/* Wrapper intérieur de chaque colonne (c'est LUI qu'on transforme en "carte") */
+div[data-testid="column"] > div {{
     background: rgba(255,255,255,0.28);
     border: 1px solid rgba(255,255,255,0.30);
     border-radius: 22px;
@@ -108,29 +93,25 @@ div[data-testid="column"]:nth-of-type(2) {{
     box-shadow: 0 12px 34px rgba(0,0,0,0.18);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-
     transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
 }}
-.split-card:hover {{
+
+/* Hover sur la "carte" colonne */
+div[data-testid="column"] > div:hover {{
     transform: translateY(-3px);
     box-shadow: 0 16px 44px rgba(0,0,0,0.22);
     border-color: rgba(255,255,255,0.40);
     background: rgba(255,255,255,0.32);
 }}
 
-/* ✅ FIX anti-"4 blocs": PAS de min-height ici */
-.split-inner {{
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+/* Séparation verticale subtile */
+div[data-testid="column"]:nth-of-type(1) > div {{
+    border-right: 1px solid rgba(255,255,255,0.20);
 }}
 
-/* Titres */
-.split-title {{
-    font-size: 28px;
-    font-weight: 800;
-    margin-bottom: 18px;
+/* Titres (Streamlit header/subheader) un peu plus visibles */
+h2, h3 {{
+    margin-top: 0.2rem;
 }}
 
 /* Bouton "Prédire" stylisé */
@@ -154,31 +135,22 @@ div[data-testid="stFormSubmitButton"] button:active {{
     transform: translateY(0px);
     box-shadow: 0 8px 16px rgba(16,185,129,0.25) !important;
 }}
-
-/* Ajuste widgets */
-div[data-testid="stSlider"] > div {{
-    padding-top: 0.2rem;
-}}
 </style>
 """, unsafe_allow_html=True)
-
 
 # -----------------------------
 # UI
 # -----------------------------
-st.title(" Prédiction de souscription bancaire")
+st.title("Prédiction de souscription bancaire")
 st.markdown("Modèle basé sur pipeline : log1p + binarisation + OneHot + standardisation")
 
-# Chargement du pipeline entraîné
 model = joblib.load("model_pipeline.pkl")
 
-# 2 colonnes : Paramètres / Résultat
 left, right = st.columns(2, gap="large")
 
-# Formulaire (UX)
+# Formulaire à gauche
 with left:
-    st.markdown('<div class="split-card"><div class="split-inner">', unsafe_allow_html=True)
-    st.markdown('<div class="split-title">🧾 Paramètres client</div>', unsafe_allow_html=True)
+    st.header("🧾 Paramètres client")
 
     with st.form("form_client"):
         col1, col2, col3 = st.columns(3)
@@ -214,71 +186,33 @@ with left:
 
         submitted = st.form_submit_button("🎯 Prédire")
 
-    st.markdown('</div></div>', unsafe_allow_html=True)
-
-# État
+# Etat
 if "has_pred" not in st.session_state:
     st.session_state.has_pred = False
 if submitted:
     st.session_state.has_pred = True
 
-# -----------------------------
-# Résultat
-# -----------------------------
-if st.session_state.has_pred:
-    client_input = pd.DataFrame([{
-        'duration': duration,
-        'balance': balance,
-        'campaign': campaign,
-        'pdays': pdays,
-        'previous': previous,
-        'job': job,
-        'education': education,
-        'contact': contact,
-        'month': month,
-        'poutcome': poutcome,
-        'cluster': cluster
-    }])
+# Résultat à droite
+with right:
+    st.header("📈 Résultat")
 
-    proba = model.predict_proba(client_input)[0, 1]
-    pred = model.predict(client_input)[0]
+    if st.session_state.has_pred:
+        client_input = pd.DataFrame([{
+            'duration': duration,
+            'balance': balance,
+            'campaign': campaign,
+            'pdays': pdays,
+            'previous': previous,
+            'job': job,
+            'education': education,
+            'contact': contact,
+            'month': month,
+            'poutcome': poutcome,
+            'cluster': cluster
+        }])
 
-    import plotly.graph_objects as go
-
-    p_pct = round(float(proba) * 100, 1)
-    theme_base = st.get_option("theme.base")
-    plotly_template = "plotly_dark" if theme_base == "dark" else "plotly_white"
-    main_color = "green" if pred == 1 else "red"
-
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=p_pct,
-        number={"suffix": "%", "font": {"size": 44}},
-        gauge={
-            "axis": {"range": [0, 100]},
-            "bar": {"color": main_color},
-            "steps": [
-                {"range": [0, 40], "color": "rgba(239,68,68,0.25)"},
-                {"range": [40, 70], "color": "rgba(234,179,8,0.25)"},
-                {"range": [70, 100], "color": "rgba(34,197,94,0.25)"},
-            ],
-            "threshold": {
-                "line": {"color": "white" if theme_base == "dark" else "black", "width": 3},
-                "thickness": 0.75,
-                "value": 50
-            }
-        },
-        title={"text": "Niveau de probabilité de souscription"}
-    ))
-    fig.update_layout(
-        template=plotly_template,
-        height=320,
-        margin=dict(l=20, r=20, t=60, b=20),
-    )
-
-    with right:
-        st.markdown('<div class="split-card"><div class="split-inner">', unsafe_allow_html=True)
-        st.markdown('<div class="split-title">📈 Résultat</div>', unsafe_allow_html=True)
+        proba = model.predict_proba(client_input)[0, 1]
+        pred = model.predict(client_input)[0]
 
         st.metric("Probabilité de souscription à des dépôts à terme", f"{proba*100:.2f} %")
 
@@ -287,12 +221,41 @@ if st.session_state.has_pred:
         else:
             st.warning("❌ Le client ne semble pas intéressé.")
 
-        st.plotly_chart(fig, use_container_width=True)
-        st.markdown('</div></div>', unsafe_allow_html=True)
+        import plotly.graph_objects as go
 
-else:
-    with right:
-        st.markdown('<div class="split-card"><div class="split-inner">', unsafe_allow_html=True)
-        st.markdown('<div class="split-title">📈 Résultat</div>', unsafe_allow_html=True)
+        p_pct = round(float(proba) * 100, 1)
+        theme_base = st.get_option("theme.base")
+        plotly_template = "plotly_dark" if theme_base == "dark" else "plotly_white"
+        main_color = "green" if pred == 1 else "red"
+
+        fig = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=p_pct,
+            number={"suffix": "%", "font": {"size": 44}},
+            gauge={
+                "axis": {"range": [0, 100]},
+                "bar": {"color": main_color},
+                "steps": [
+                    {"range": [0, 40], "color": "rgba(239,68,68,0.25)"},
+                    {"range": [40, 70], "color": "rgba(234,179,8,0.25)"},
+                    {"range": [70, 100], "color": "rgba(34,197,94,0.25)"},
+                ],
+                "threshold": {
+                    "line": {"color": "white" if theme_base == "dark" else "black", "width": 3},
+                    "thickness": 0.75,
+                    "value": 50
+                }
+            },
+            title={"text": "Niveau de probabilité de souscription"}
+        ))
+
+        fig.update_layout(
+            template=plotly_template,
+            height=320,
+            margin=dict(l=20, r=20, t=60, b=20),
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    else:
         st.info("Remplis les paramètres puis clique sur **🎯 Prédire** pour afficher la prédiction.")
-        st.markdown('</div></div>', unsafe_allow_html=True)
