@@ -115,13 +115,8 @@ h2, h3 {{
 }}
 
 /* Bouton "Prédire" stylisé */
-div[data-testid="stFormSubmitButton"] {{
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}}
 div[data-testid="stFormSubmitButton"] button {{
- width: 50%;   /* Ajuste 40%, 50% ou 60% selon ton goût */
+    width: 100%;
     border-radius: 14px !important;
     padding: 0.8rem 1rem !important;
     font-weight: 800 !important;
@@ -136,9 +131,6 @@ div[data-testid="stFormSubmitButton"] button:hover {{
     box-shadow: 0 14px 30px rgba(16,185,129,0.35) !important;
     filter: brightness(1.02);
 }}
-
-
-
 div[data-testid="stFormSubmitButton"] button:active {{
     transform: translateY(0px);
     box-shadow: 0 8px 16px rgba(16,185,129,0.25) !important;
