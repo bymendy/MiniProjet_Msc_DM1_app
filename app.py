@@ -85,7 +85,7 @@ st.markdown(f"""
 
 /* Wrapper intérieur de chaque colonne (c'est LUI qu'on transforme en "carte") */
 div[data-testid="column"] > div {{
-    background: rgba(255,255,255,0.28);
+    background: rgba(255,255,255,0.72);
     border: 1px solid rgba(255,255,255,0.30);
     border-radius: 22px;
     padding: 24px;
