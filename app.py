@@ -97,10 +97,8 @@ left, right = st.columns(2, gap="large")
 
 # -----------------------------
 # CSS Split screen premium (85vh)
-# - séparation verticale subtile
-# - hover animation
-# - bouton stylisé
-# - centrage vertical du contenu
+# - correction split-inner (plus de 4 blocs)
+# - glassmorphism (sans blanc opaque)
 # -----------------------------
 BLOCK_HEIGHT = "85vh"
 
@@ -115,33 +113,34 @@ st.markdown(f"""
 
 /* Séparation verticale subtile entre colonnes */
 div[data-testid="column"]:nth-of-type(1) {{
-    border-right: 1px solid rgba(0,0,0,0.10);
+    border-right: 1px solid rgba(255,255,255,0.20);
     padding-right: 1.2rem;
 }}
 div[data-testid="column"]:nth-of-type(2) {{
     padding-left: 1.2rem;
 }}
 
-/* Card split */
+/* Card split - glass (pas opaque) */
 .split-card {{
-    background: rgba(255,255,255,0.72);
-    border: 1px solid rgba(0,0,0,0.08);
+    background: rgba(255,255,255,0.28);
+    border: 1px solid rgba(255,255,255,0.30);
     border-radius: 22px;
     padding: 24px 24px;
     min-height: {BLOCK_HEIGHT};
-    box-shadow: 0 12px 34px rgba(0,0,0,0.15);
-    backdrop-filter: blur(6px);
+    box-shadow: 0 12px 34px rgba(0,0,0,0.18);
+    backdrop-filter: blur(12px);
 
     /* Hover animation */
-    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
 }}
 .split-card:hover {{
     transform: translateY(-3px);
-    box-shadow: 0 16px 44px rgba(0,0,0,0.20);
-    border-color: rgba(0,0,0,0.14);
+    box-shadow: 0 16px 44px rgba(0,0,0,0.22);
+    border-color: rgba(255,255,255,0.40);
+    background: rgba(255,255,255,0.32);
 }}
 
-/* Centrage vertical du contenu (flex) */
+/* ✅ FIX : plus de double hauteur -> évite les blocs blancs fantômes */
 .split-inner {{
     height: 100%;
     display: flex;
