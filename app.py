@@ -1,14 +1,18 @@
 # app.py
-import numpy as np
+# import numpy as np
+# import streamlit as st
+# import pandas as pd
+# import numpy as np
+# import joblib
+
+# from pathlib import Path
+# import base64
+
+# from sklearn.base import BaseEstimator, TransformerMixin
+import sklearn
 import streamlit as st
-import pandas as pd
-import numpy as np
-import joblib
 
-from pathlib import Path
-import base64
-
-from sklearn.base import BaseEstimator, TransformerMixin
+st.write("Version sklearn (PROD) :", sklearn.__version__)
 
 
 class PositiveClipper(BaseEstimator, TransformerMixin):
