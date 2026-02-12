@@ -123,18 +123,7 @@ div[data-testid="column"]:nth-of-type(2) {{
 }}
 
 /* Card split */
-.split-card {{
-    background: rgba(255,255,255,0.72);
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 22px;
-    padding: 24px 24px;
-    min-height: {BLOCK_HEIGHT};
-    box-shadow: 0 12px 34px rgba(0,0,0,0.15);
-    backdrop-filter: blur(6px);
 
-    /* Hover animation */
-    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-}}
 .split-card:hover {{
     transform: translateY(-3px);
     box-shadow: 0 16px 44px rgba(0,0,0,0.20);
