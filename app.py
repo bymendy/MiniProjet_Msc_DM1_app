@@ -22,9 +22,11 @@ class PositiveClipper(BaseEstimator, TransformerMixin):
     """    
     def fit(self, X, y=None):
         return self
+
     def transform(self, X):
         X = np.where(np.isfinite(X), X, 0)
         return np.clip(X, a_min=0, a_max=None)
+
 
 def set_bg_from_local(image_path):
     """Encode l'image locale en base64 et l'utilise comme fond"""
@@ -42,8 +44,10 @@ def set_bg_from_local(image_path):
     """
     st.markdown(css, unsafe_allow_html=True)
 
+
 # Appliquer le fond
 set_bg_from_local("business_fond_bank.png")
+
 
 def set_bg_from_local(image_path):
     """Affiche une image de fond éclaircie pour améliorer la lisibilité"""
@@ -58,16 +62,15 @@ def set_bg_from_local(image_path):
         background-attachment: fixed;
         background-repeat: no-repeat;
         position: relative;
-        background-color: rgba(255, 255, 255, 0.80);  /* plus opaque */
-
+        background-color: rgba(255, 255, 255, 0.80);
     }}
 
-        .stApp::before {{
+    .stApp::before {{
         content: "";
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        opacity: .3;  /* plus opaque */
-        background-color: rgba(255, 255, 255, 0.80);  /* plus opaque */
+        opacity: .3;
+        background-color: rgba(255, 255, 255, 0.80);
         z-index: 0;
     }}
 
@@ -81,12 +84,13 @@ def set_bg_from_local(image_path):
     """
     st.markdown(css, unsafe_allow_html=True)
 
+
 # Titre
 st.title(" Prédiction de souscription bancaire")
 st.markdown("Modèle basé sur pipeline : log1p + binarisation + OneHot + standardisation")
 
 # Chargement du pipeline entraîné
-model = joblib.load("model_pipeline.pkl")  
+model = joblib.load("model_pipeline.pkl")
 
 # Entrée utilisateur
 st.header("🧾 Paramètres client")
@@ -130,7 +134,7 @@ with col7:
     ])
     cluster = st.selectbox("Cluster client", [0, 1, 2])
 
-# Données réunies dans un DataFrame
+# DataFrame final
 client_input = pd.DataFrame([{
     'duration': duration,
     'balance': balance,
@@ -149,19 +153,57 @@ client_input = pd.DataFrame([{
 proba = model.predict_proba(client_input)[0, 1]
 pred = model.predict(client_input)[0]
 
-# Affichage
+# Affichage résultat
 st.subheader("📈 Résultat")
 st.metric("Probabilité de souscription à des dépôts à terme", f"{proba*100:.2f} %")
+
 if pred == 1:
     st.success("✅ Le client est susceptible de souscrire.")
 else:
     st.warning("❌ Le client ne semble pas intéressé.")
 
-# Visualisation simple (jauge)
-import matplotlib.pyplot as plt
 
-fig, ax = plt.subplots()
-ax.barh(["Client"], [proba], color="green" if pred == 1 else "red")
-ax.set_xlim(0, 1)
-ax.set_title("Niveau de probabilité de souscription")
-st.pyplot(fig)
+# -----------------------------
+# Jauge Plotly auto-thème
+# -----------------------------
+import plotly.graph_objects as go
+
+p = float(proba)
+p_pct = round(p * 100, 1)
+
+theme_base = st.get_option("theme.base")
+plotly_template = "plotly_dark" if theme_base == "dark" else "plotly_white"
+
+main_color = "green" if pred == 1 else "red"
+
+fig = go.Figure(go.Indicator(
+    mode="gauge+number",
+    value=p_pct,
+    number={"suffix": "%", "font": {"size": 44}},
+    gauge={
+        "axis": {"range": [0, 100]},
+        "bar": {"color": main_color},
+        "steps": [
+            {"range": [0, 40], "color": "rgba(239,68,68,0.25)"},
+            {"range": [40, 70], "color": "rgba(234,179,8,0.25)"},
+            {"range": [70, 100], "color": "rgba(34,197,94,0.25)"},
+        ],
+        "threshold": {
+            "line": {
+                "color": "white" if theme_base == "dark" else "black",
+                "width": 3
+            },
+            "thickness": 0.75,
+            "value": 50
+        }
+    },
+    title={"text": "Niveau de probabilité de souscription"}
+))
+
+fig.update_layout(
+    template=plotly_template,
+    height=320,
+    margin=dict(l=20, r=20, t=60, b=20),
+)
+
+st.plotly_chart(fig, use_container_width=True)
