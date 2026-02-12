@@ -93,13 +93,104 @@ st.markdown("Modèle basé sur pipeline : log1p + binarisation + OneHot + standa
 model = joblib.load("model_pipeline.pkl")
 
 # ---- 2 colonnes principales : Paramètres (gauche) / Résultat (droite)
-left, right = st.columns([1.2, 1])
+left, right = st.columns(2, gap="large")
+
+# -----------------------------
+# CSS Split screen premium (85vh)
+# - séparation verticale subtile
+# - hover animation
+# - bouton stylisé
+# - centrage vertical du contenu
+# -----------------------------
+BLOCK_HEIGHT = "85vh"
+
+st.markdown(f"""
+<style>
+/* Pleine largeur */
+.block-container {{
+    max-width: 100% !important;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}}
+
+/* Séparation verticale subtile entre colonnes */
+div[data-testid="column"]:nth-of-type(1) {{
+    border-right: 1px solid rgba(0,0,0,0.10);
+    padding-right: 1.2rem;
+}}
+div[data-testid="column"]:nth-of-type(2) {{
+    padding-left: 1.2rem;
+}}
+
+/* Card split */
+.split-card {{
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 22px;
+    padding: 24px 24px;
+    min-height: {BLOCK_HEIGHT};
+    box-shadow: 0 12px 34px rgba(0,0,0,0.15);
+    backdrop-filter: blur(6px);
+
+    /* Hover animation */
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}}
+.split-card:hover {{
+    transform: translateY(-3px);
+    box-shadow: 0 16px 44px rgba(0,0,0,0.20);
+    border-color: rgba(0,0,0,0.14);
+}}
+
+/* Centrage vertical du contenu (flex) */
+.split-inner {{
+    min-height: {BLOCK_HEIGHT};
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}}
+
+/* Titre */
+.split-title {{
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 18px;
+}}
+
+/* Bouton "Prédire" stylisé */
+div[data-testid="stFormSubmitButton"] button {{
+    width: 100%;
+    border-radius: 14px !important;
+    padding: 0.8rem 1rem !important;
+    font-weight: 800 !important;
+    border: 1px solid rgba(0,0,0,0.12) !important;
+    background: linear-gradient(90deg, rgba(34,197,94,0.95), rgba(16,185,129,0.95)) !important;
+    color: white !important;
+    box-shadow: 0 10px 22px rgba(16,185,129,0.25) !important;
+    transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}}
+div[data-testid="stFormSubmitButton"] button:hover {{
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px rgba(16,185,129,0.35) !important;
+    filter: brightness(1.02);
+}}
+div[data-testid="stFormSubmitButton"] button:active {{
+    transform: translateY(0px);
+    box-shadow: 0 8px 16px rgba(16,185,129,0.25) !important;
+}}
+
+/* Ajuste un peu les widgets */
+div[data-testid="stSlider"] > div {{
+    padding-top: 0.2rem;
+}}
+</style>
+""", unsafe_allow_html=True)
 
 # -----------------------------
 # Formulaire (UX) : pas de recalcul à chaque slider
 # -----------------------------
 with left:
-    st.header("🧾 Paramètres client")
+    st.markdown('<div class="split-card"><div class="split-inner">', unsafe_allow_html=True)
+    st.markdown('<div class="split-title">🧾 Paramètres client</div>', unsafe_allow_html=True)
 
     with st.form("form_client"):
         # Groupe 1 : variables numériques
@@ -142,6 +233,8 @@ with left:
             cluster = st.selectbox("Cluster client", [0, 1, 2])
 
         submitted = st.form_submit_button("🎯 Prédire")
+
+    st.markdown('</div></div>', unsafe_allow_html=True)
 
 # Valeurs par défaut si l'utilisateur n'a pas encore cliqué
 if "has_pred" not in st.session_state:
@@ -215,7 +308,9 @@ if st.session_state.has_pred:
     )
 
     with right:
-        st.header("📈 Résultat")
+        st.markdown('<div class="split-card"><div class="split-inner">', unsafe_allow_html=True)
+        st.markdown('<div class="split-title">📈 Résultat</div>', unsafe_allow_html=True)
+
         st.metric("Probabilité de souscription à des dépôts à terme", f"{proba*100:.2f} %")
 
         if pred == 1:
@@ -225,7 +320,11 @@ if st.session_state.has_pred:
 
         st.plotly_chart(fig, use_container_width=True)
 
+        st.markdown('</div></div>', unsafe_allow_html=True)
+
 else:
     with right:
-        st.header("📈 Résultat")
+        st.markdown('<div class="split-card"><div class="split-inner">', unsafe_allow_html=True)
+        st.markdown('<div class="split-title">📈 Résultat</div>', unsafe_allow_html=True)
         st.info("Remplis les paramètres puis clique sur **🎯 Prédire** pour afficher la prédiction.")
+        st.markdown('</div></div>', unsafe_allow_html=True)
