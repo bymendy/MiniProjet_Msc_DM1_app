@@ -66,17 +66,14 @@ set_bg_from_local("business_fond_bank.png")
 
 # -----------------------------
 # CSS Split-screen PRO (2 blocs réels)
-# - style appliqué aux colonnes Streamlit (PAS de <div> wrapper)
-# - glassmorphism
-# - hover
-# - séparation verticale
-# - bouton stylisé
+# - style appliqué aux colonnes Streamlit
+# - colonne gauche = style demandé
+# - bouton "Prédire" centré
 # -----------------------------
 BLOCK_HEIGHT = "85vh"
 
 st.markdown(f"""
 <style>
-
 /* Pleine largeur */
 .block-container {{
     max-width: 100% !important;
@@ -96,11 +93,12 @@ div[data-testid="column"]:nth-of-type(1) > div {{
     min-height: {BLOCK_HEIGHT};
     box-shadow: 0 12px 34px rgba(0,0,0,0.15);
     backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }}
 
 /* ------------------------------
-   COLONNE DROITE (résultat)
-   Style plus léger
+   COLONNE DROITE (RÉSULTAT)
+   Glass léger
 ------------------------------ */
 div[data-testid="column"]:nth-of-type(2) > div {{
     background: rgba(255,255,255,0.28);
@@ -108,16 +106,22 @@ div[data-testid="column"]:nth-of-type(2) > div {{
     border-radius: 22px;
     padding: 24px;
     min-height: {BLOCK_HEIGHT};
+    box-shadow: 0 12px 34px rgba(0,0,0,0.18);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }}
 
 /* Séparation verticale subtile */
 div[data-testid="column"]:nth-of-type(1) {{
     border-right: 1px solid rgba(0,0,0,0.08);
+    padding-right: 1.2rem;
+}}
+div[data-testid="column"]:nth-of-type(2) {{
+    padding-left: 1.2rem;
 }}
 
 /* ------------------------------
-   BOUTON CENTRÉ
+   BOUTON "PRÉDIRE" CENTRÉ
 ------------------------------ */
 div[data-testid="stFormSubmitButton"] {{
     display: flex;
@@ -134,13 +138,18 @@ div[data-testid="stFormSubmitButton"] button {{
     background: linear-gradient(90deg, rgba(34,197,94,0.95), rgba(16,185,129,0.95)) !important;
     color: white !important;
     box-shadow: 0 10px 22px rgba(16,185,129,0.25) !important;
+    transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
 }}
 
 div[data-testid="stFormSubmitButton"] button:hover {{
     transform: translateY(-2px);
     box-shadow: 0 14px 30px rgba(16,185,129,0.35) !important;
+    filter: brightness(1.02);
 }}
-
+div[data-testid="stFormSubmitButton"] button:active {{
+    transform: translateY(0px);
+    box-shadow: 0 8px 16px rgba(16,185,129,0.25) !important;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -181,7 +190,6 @@ with left:
             ])
             contact = st.selectbox("Type de contact", ['cellular', 'telephone', 'unknown'])
             poutcome = st.selectbox("Résultat précédente", ['success', 'failure', 'other', 'non_contacté'])
-
         with col7:
             education = st.selectbox("Éducation", ['primary', 'secondary', 'tertiary'])
             month = st.selectbox("Mois du contact", [
