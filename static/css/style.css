@@ -382,12 +382,13 @@ select option {
 
 /* ── Gauge SVG ── */
 .gauge-wrapper {
-    margin: .5rem 0 1rem;
+    margin: .75rem 0 1rem;   /* ← .5rem → .75rem */
+    overflow: visible;        /* ← ajouté */
 }
 
 .gauge-svg {
     width: 100%;
-    max-width: 280px;
+    max-width: 260px;         /* ← 280px → 260px */
     display: block;
     margin: 0 auto;
     overflow: visible;
@@ -395,24 +396,27 @@ select option {
 
 .gauge-text {
     font-family: 'Playfair Display', serif;
-    font-size: 18px;
+    font-size: 16px;          /* ← 18px → 16px */
     font-weight: 800;
     fill: var(--blue-light);
 }
 
 .gauge-label {
     font-family: 'DM Sans', sans-serif;
-    font-size: 9px;
-    fill: rgba(255, 255, 255, 0.45);
+    font-size: 8px;           /* ← 9px → 8px */
+    fill: rgba(255, 255, 255, 0.40);  /* ← 0.45 → 0.40 */
 }
 
 .gauge-ticks {
     display: flex;
     justify-content: space-between;
-    padding: 0 1.5rem;
-    font-size: .72rem;
-    color: rgba(255, 255, 255, 0.35);
-    margin-top: -.25rem;
+    padding: 0 .75rem;        /* ← 1.5rem → .75rem */
+    font-size: .70rem;        /* ← .72rem → .70rem */
+    color: rgba(255, 255, 255, 0.30);  /* ← 0.35 → 0.30 */
+    margin-top: .25rem;       /* ← -.25rem → .25rem */
+    max-width: 260px;         /* ← ajouté */
+    margin-left: auto;        /* ← ajouté */
+    margin-right: auto;       /* ← ajouté */
 }
 
 /* ── Score bar ── */
