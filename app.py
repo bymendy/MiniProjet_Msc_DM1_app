@@ -3,19 +3,9 @@ import joblib
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request, jsonify
-from sklearn.base import BaseEstimator, TransformerMixin
+from preprocessing import PositiveClipper
 
 app = Flask(__name__)
-
-
-class PositiveClipper(BaseEstimator, TransformerMixin):
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        X = np.where(np.isfinite(X), X, 0)
-        return np.clip(X, a_min=0, a_max=None)
-
 
 model = joblib.load("models/model_pipeline.pkl")
 
