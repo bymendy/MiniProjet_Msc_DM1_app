@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BankScore — Prédiction bancaire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <!-- BACKGROUND -->
+    <div class="bg-image"></div>
+    <div class="bg-overlay"></div>
+
+    <!-- WRAPPER -->
+    <div class="wrapper">
+      <!-- HEADER -->
+      <header class="page-header">
+        <div class="header-badge">
+          <span class="badge-dot"></span>
+          Modèle ML · Scoring Bancaire
+        </div>
+        <h1>Bank<span>Score</span></h1>
+        <p>Prédiction de souscription à un dépôt à terme</p>
+        <p class="header-sub">
+          Pipeline : log1p · binarisation · OneHot · standardisation · Random
+          Forest
+        </p>
+      </header>
+
+      <!-- GRID -->
+      <div class="grid">
+        <!-- LEFT — Formulaire -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🧾</span>
+            <h2>Paramètres client</h2>
+          </div>
+
+          <form id="predForm">
+            <!-- Ligne 1 -->
+            <div class="form-row three">
+              <div class="field">
+                <label for="duration">Durée de l'appel (sec)</label>
+                <input
+                  type="number"
+                  id="duration"
+                  name="duration"
+                  value="180"
+                  min="0"
+                  max="5000"
+                />
+              </div>
+              <div class="field">
+                <label for="balance">Solde moyen (€)</label>
+                <input
+                  type="number"
+                  id="balance"
+                  name="balance"
+                  value="1000"
+                  min="-2000"
+                  max="100000"
+                />
+              </div>
+              <div class="field">
+                <label for="campaign">Contacts campagne</label>
+                <input
+                  type="number"
+                  id="campaign"
+                  name="campaign"
+                  value="1"
+                  min="1"
+                  max="50"
+                />
+              </div>
+            </div>
+
+            <!-- Ligne 2 -->
+            <div class="form-row two">
+              <div class="field">
+                <label for="pdays">Jours depuis dernier contact</label>
+                <input
+                  type="number"
+                  id="pdays"
+                  name="pdays"
+                  value="-1"
+                  min="-1"
+                  max="999"
+                />
+              </div>
+              <div class="field">
+                <label for="previous">Nb contacts précédents</label>
+                <input
+                  type="number"
+                  id="previous"
+                  name="previous"
+                  value="0"
+                  min="0"
+                  max="100"
+                />
+              </div>
+            </div>
+
+            <!-- Ligne 3 -->
+            <div class="form-row two">
+              <div class="field">
+                <label for="job">Profession</label>
+                <select id="job" name="job">
+                  {% for j in jobs %}
+                  <option value="{{ j }}">{{ j }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="field">
+                <label for="education">Éducation</label>
+                <select id="education" name="education">
+                  {% for e in educations %}
+                  <option value="{{ e }}">{{ e }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <!-- Ligne 4 -->
+            <div class="form-row three">
+              <div class="field">
+                <label for="contact">Type de contact</label>
+                <select id="contact" name="contact">
+                  {% for c in contacts %}
+                  <option value="{{ c }}">{{ c }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="field">
+                <label for="month">Mois du contact</label>
+                <select id="month" name="month">
+                  {% for m in months %}
+                  <option value="{{ m }}">{{ m }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="field">
+                <label for="poutcome">Résultat précédent</label>
+                <select id="poutcome" name="poutcome">
+                  {% for p in poutcomes %}
+                  <option value="{{ p }}">{{ p }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <!-- Ligne 5 -->
+            <div class="form-row one">
+              <div class="field">
+                <label for="cluster">Cluster client</label>
+                <select id="cluster" name="cluster">
+                  {% for c in clusters %}
+                  <option value="{{ c }}">Cluster {{ c }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-predict" id="submitBtn">
+              <span id="btnText">🎯 Lancer la prédiction</span>
+              <span id="btnLoader" class="loader" style="display: none"></span>
+            </button>
+          </form>
+        </div>
+
+        <!-- RIGHT — Résultat -->
+        <div class="card" id="resultCard">
+          <div class="card-header">
+            <span class="card-icon">📈</span>
+            <h2>Résultat de l'analyse</h2>
+          </div>
+
+          <!-- État vide -->
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon">🏦</div>
+            <h3>Prêt à analyser</h3>
+            <p>
+              Remplis les paramètres client puis clique sur
+              <strong>Lancer la prédiction</strong> pour afficher le résultat.
+            </p>
+          </div>
+
+          <!-- Résultat (caché par défaut) -->
+          <div class="result-content" id="resultContent" style="display: none">
+            <div class="metric-box">
+              <span class="metric-label">Probabilité de souscription</span>
+              <span class="metric-value" id="probaValue">—</span>
+            </div>
+
+            <div class="verdict-box" id="verdictBox">
+              <span class="verdict-icon" id="verdictIcon"></span>
+              <span class="verdict-text" id="verdictText"></span>
+            </div>
+
+            <!-- Gauge SVG -->
+            <div class="gauge-wrapper">
+              <svg viewBox="0 0 200 110" class="gauge-svg">
+                <!-- Zones -->
+                <path
+                  d="M 20 100 A 80 80 0 0 1 68 28"
+                  fill="none"
+                  stroke="rgba(239,68,68,0.2)"
+                  stroke-width="14"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M 68 28 A 80 80 0 0 1 132 28"
+                  fill="none"
+                  stroke="rgba(234,179,8,0.2)"
+                  stroke-width="14"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M 132 28 A 80 80 0 0 1 180 100"
+                  fill="none"
+                  stroke="rgba(59,130,246,0.2)"
+                  stroke-width="14"
+                  stroke-linecap="round"
+                />
+                <!-- Arc principal -->
+                <path
+                  id="gaugeArc"
+                  d="M 20 100 A 80 80 0 0 1 20 100"
+                  fill="none"
+                  stroke="#3b82f6"
+                  stroke-width="14"
+                  stroke-linecap="round"
+                  style="transition: all 0.8s ease"
+                />
+                <!-- Texte centre -->
+                <text
+                  x="100"
+                  y="95"
+                  text-anchor="middle"
+                  class="gauge-text"
+                  id="gaugeText"
+                >
+                  —
+                </text>
+                <text x="100" y="108" text-anchor="middle" class="gauge-label">
+                  Probabilité
+                </text>
+              </svg>
+              <div class="gauge-ticks">
+                <span>0%</span><span>50%</span><span>100%</span>
+              </div>
+            </div>
+
+            <!-- Barre de score -->
+            <div class="score-bar-wrapper">
+              <div class="score-bar-track">
+                <div class="score-bar-fill" id="scoreBarFill"></div>
+              </div>
+              <span class="score-bar-value" id="scoreBarValue"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="footer">
+        Projet <span>BankScore</span> · Modèle ML de scoring bancaire · Pipeline
+        scikit-learn
+      </footer>
+    </div>
+
+    <script>
+      document
+        .getElementById("predForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          // Loading state
+          document.getElementById("btnText").style.display = "none";
+          document.getElementById("btnLoader").style.display = "inline-block";
+          document.getElementById("submitBtn").disabled = true;
+
+          const payload = {
+            duration: document.getElementById("duration").value,
+            balance: document.getElementById("balance").value,
+            campaign: document.getElementById("campaign").value,
+            pdays: document.getElementById("pdays").value,
+            previous: document.getElementById("previous").value,
+            job: document.getElementById("job").value,
+            education: document.getElementById("education").value,
+            contact: document.getElementById("contact").value,
+            month: document.getElementById("month").value,
+            poutcome: document.getElementById("poutcome").value,
+            cluster: document.getElementById("cluster").value,
+          };
+
+          try {
+            const res = await fetch("/predict", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            showResult(data);
+          } catch (err) {
+            console.error(err);
+          } finally {
+            document.getElementById("btnText").style.display = "inline";
+            document.getElementById("btnLoader").style.display = "none";
+            document.getElementById("submitBtn").disabled = false;
+          }
+        });
+
+      function showResult(data) {
+        document.getElementById("emptyState").style.display = "none";
+        document.getElementById("resultContent").style.display = "block";
+
+        const proba = data.proba;
+        const isGood = data.pred === 1;
+        const color = isGood ? "#3b82f6" : "#ef4444";
+        const accent = isGood ? "#60a5fa" : "#f87171";
+
+        // Metric
+        document.getElementById("probaValue").textContent =
+          proba.toFixed(2) + " %";
+        document.getElementById("probaValue").style.color = accent;
+
+        // Verdict
+        const verdictBox = document.getElementById("verdictBox");
+        verdictBox.className =
+          "verdict-box " + (isGood ? "verdict-success" : "verdict-warning");
+        document.getElementById("verdictIcon").textContent = isGood
+          ? "✅"
+          : "❌";
+        document.getElementById("verdictText").textContent = isGood
+          ? "Le client est susceptible de souscrire. Profil favorable détecté."
+          : "Le client ne semble pas intéressé. Probabilité insuffisante.";
+
+        // Gauge SVG arc
+        updateGauge(proba, color, accent);
+
+        // Score bar
+        document.getElementById("scoreBarFill").style.width = proba + "%";
+        document.getElementById("scoreBarFill").style.background =
+          `linear-gradient(90deg, ${color}, ${accent})`;
+        document.getElementById("scoreBarValue").textContent =
+          proba.toFixed(1) + "%";
+        document.getElementById("scoreBarValue").style.color = accent;
+      }
+
+      function updateGauge(pct, color, accent) {
+        // Arc de 180° de gauche (20,100) à droite (180,100)
+        const angle = (pct / 100) * Math.PI;
+        const cx = 100,
+          cy = 100,
+          r = 80;
+        const x = cx + r * Math.cos(Math.PI - angle);
+        const y = cy - r * Math.sin(Math.PI - angle);
+        const large = angle > Math.PI / 2 ? 1 : 0;
+
+        const arc = document.getElementById("gaugeArc");
+        if (pct === 0) {
+          arc.setAttribute("d", "M 20 100 A 80 80 0 0 1 20 100");
+        } else {
+          arc.setAttribute(
+            "d",
+            `M 20 100 A 80 80 0 ${large} 1 ${x.toFixed(2)} ${y.toFixed(2)}`,
+          );
+        }
+        arc.setAttribute("stroke", color);
+
+        document.getElementById("gaugeText").textContent = pct.toFixed(1) + "%";
+        document.getElementById("gaugeText").style.fill = accent;
+      }
+    </script>
+  </body>
+</html>
